@@ -1,0 +1,36 @@
+name: Fork release-target smoke
+
+on:
+  push:
+    branches:
+      - windows-arm64-release
+  pull_request:
+
+jobs:
+  linux-arm64-musl-package:
+    name: Linux ARM64 musl package
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+      - name: Build release binary
+        run: cross build --release --target aarch64-unknown-linux-musl
+      - name: Package release artifacts
+        env:
+          TARGET: aarch64-unknown-linux-musl
+          PROJECT_NAME: delta
+          PACKAGE_NAME: git-delta
+          OS_NAME: ubuntu-24.04-arm
+          GITHUB_REF: refs/tags/0.0.0-fork-test
+        run: ./etc/ci/before_deploy.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delta-linux-arm64-musl
+          path: |
+            *.tar.gz
+            *.deb
