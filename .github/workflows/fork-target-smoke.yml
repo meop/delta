@@ -26,8 +26,8 @@ jobs:
           PROJECT_NAME: delta
           PACKAGE_NAME: git-delta
           OS_NAME: ubuntu-24.04-arm
-          GITHUB_REF: refs/tags/0.0.0-fork-test
-        run: ./etc/ci/before_deploy.sh
+        # GitHub reserves GITHUB_REF, so set the tag-shaped value for the packaging process.
+        run: GITHUB_REF=refs/tags/0.0.0-fork-test ./etc/ci/before_deploy.sh
       - uses: actions/upload-artifact@v4
         with:
           name: delta-linux-arm64-musl
