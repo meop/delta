@@ -1,0 +1,57 @@
+name: Fork release-target smoke
+
+on:
+  push:
+    branches:
+      - windows-arm64-release
+  pull_request:
+
+jobs:
+  windows-arm64-package:
+    name: Windows ARM64 package
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-pc-windows-msvc
+      - name: Build release binary
+        run: cargo build --release --target aarch64-pc-windows-msvc
+      - name: Package release artifact
+        shell: bash
+        env:
+          TARGET: aarch64-pc-windows-msvc
+          PROJECT_NAME: delta
+          PACKAGE_NAME: git-delta
+          OS_NAME: windows-11-arm
+        run: GITHUB_REF=refs/tags/0.0.0-fork-test ./etc/ci/before_deploy.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delta-windows-arm64
+          path: '*.zip'
+
+  linux-arm64-musl-package:
+    name: Linux ARM64 musl package
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Build release binary
+        run: cargo build --release --target aarch64-unknown-linux-musl
+      - name: Package release artifacts
+        env:
+          TARGET: aarch64-unknown-linux-musl
+          PROJECT_NAME: delta
+          PACKAGE_NAME: git-delta
+          OS_NAME: ubuntu-24.04-arm
+        # GitHub reserves GITHUB_REF, so set the tag-shaped value for the packaging process.
+        run: GITHUB_REF=refs/tags/0.0.0-fork-test ./etc/ci/before_deploy.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delta-linux-arm64-musl
+          path: |
+            *.tar.gz
+            *.deb

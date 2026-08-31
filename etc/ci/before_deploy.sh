@@ -26,7 +26,7 @@ pack() {
 
     # copying the main binary
     cp "target/$TARGET/release/$PROJECT_NAME" "$tempdir/$package_name/"
-    if [ "$OS_NAME" != windows-latest ]; then
+    if [[ $TARGET != *-windows-* ]]; then
         "${gcc_prefix}"strip "$tempdir/$package_name/$PROJECT_NAME"
     fi
 
@@ -36,7 +36,7 @@ pack() {
 
     # archiving
     pushd "$tempdir"
-    if [ "$OS_NAME" = windows-latest ]; then
+    if [[ $TARGET = *-windows-* ]]; then
         7z a "$out_dir/$package_name.zip" "$package_name"/*
     else
         tar czf "$out_dir/$package_name.tar.gz" "$package_name"/*
@@ -70,10 +70,15 @@ make_deb() {
             gcc_prefix=""
             library_dir=""
             ;;
-        aarch64*)
+        aarch64-unknown-linux-gnu)
             architecture=arm64
             gcc_prefix="aarch64-linux-gnu-"
             library_dir="-l/usr/aarch64-linux-gnu/lib"
+            ;;
+        aarch64-unknown-linux-musl)
+            architecture=arm64
+            gcc_prefix=""
+            library_dir=""
             ;;
         arm*hf)
             architecture=armhf
