@@ -9,17 +9,15 @@ on:
 jobs:
   linux-arm64-musl-package:
     name: Linux ARM64 musl package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-unknown-linux-musl
-      - uses: taiki-e/install-action@v2
-        with:
-          tool: cross
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools
       - name: Build release binary
-        run: cross build --release --target aarch64-unknown-linux-musl
+        run: cargo build --release --target aarch64-unknown-linux-musl
       - name: Package release artifacts
         env:
           TARGET: aarch64-unknown-linux-musl
