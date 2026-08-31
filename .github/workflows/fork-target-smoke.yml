@@ -7,6 +7,29 @@ on:
   pull_request:
 
 jobs:
+  windows-arm64-package:
+    name: Windows ARM64 package
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-pc-windows-msvc
+      - name: Build release binary
+        run: cargo build --release --target aarch64-pc-windows-msvc
+      - name: Package release artifact
+        shell: bash
+        env:
+          TARGET: aarch64-pc-windows-msvc
+          PROJECT_NAME: delta
+          PACKAGE_NAME: git-delta
+          OS_NAME: windows-11-arm
+        run: GITHUB_REF=refs/tags/0.0.0-fork-test ./etc/ci/before_deploy.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delta-windows-arm64
+          path: '*.zip'
+
   linux-arm64-musl-package:
     name: Linux ARM64 musl package
     runs-on: ubuntu-24.04-arm
